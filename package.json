@@ -1,0 +1,23 @@
+{
+  "name": "lambda-calculus",
+  "version": "1.0.0",
+  "description": "A simple, clean and fast implementation of the λ-calculus on JavaScript.",
+  "main": "lambda-calculus.js",
+  "scripts": {
+    "test": "node test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/maiavictor/lambda-calculus.git"
+  },
+  "keywords": [
+    "lambda-calculus",
+    "functional-programming"
+  ],
+  "author": "MaiaVictor",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/maiavictor/lambda-calculus.js/issues"
+  },
+  "homepage": "https://github.com/maiavictor/lambda-calculus.js#readme"
+}
