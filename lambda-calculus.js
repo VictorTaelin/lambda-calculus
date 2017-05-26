@@ -169,7 +169,7 @@ module.exports = (function(){
           binder += source[index++];
         return source[index] === "."
           ? Lam(parse(depth+1, binders.concat(binder)))
-          : Var(depth - binders.indexOf(binder) - 1);
+          : Var(depth - binders.lastIndexOf(binder) - 1);
       }
     })(0, []);
   };
