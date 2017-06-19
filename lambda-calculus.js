@@ -155,23 +155,33 @@ module.exports = (function(){
   // String -> Term
   function fromString(source){
     var index = 0;
-    return (function parse(depth, binders){
-      while (/[^a-zA-Z\(_]/.test(source[index]))
+    return (function parse(depth, binders, aliases){
+      while (/[^a-zA-Z0-9\(_]/.test(source[index]))
         ++index;
-      if (source[index] === "("){
+      if (source[index] === "(") {
         ++index;
-        var fun = parse(depth, binders);
-        var arg = parse(depth, binders);
-        return App(fun, arg); 
+        var app = parse(depth, binders, aliases);
+        while (source[index] !== ")")
+          app = App(app, parse(depth, binders, aliases));
+        ++index;
+        return app;
       } else {
         var binder = "";
-        while (/[a-zA-Z_]/.test(source[index]) && index !== source.length)
+        while (/[a-zA-Z0-9_]/.test(source[index]) && index !== source.length)
           binder += source[index++];
-        return source[index] === "."
-          ? Lam(parse(depth+1, binders.concat(binder)))
-          : Var(depth - binders.lastIndexOf(binder) - 1);
+        switch (source[index]) {
+          case ".":
+            return Lam(parse(depth+1, binders.concat(binder), aliases.concat(null)))
+          case "=":
+            var term = parse(depth, binders, aliases);
+            var body = parse(depth+1, binders.concat(binder), aliases.concat(term));
+            return body;
+          default:
+            var idx = binders.lastIndexOf(binder);
+            return aliases[idx] || Var(depth - idx - 1);
+        }
       }
-    })(0, []);
+    })(0, [], []);
   };
 
   // Term -> String
