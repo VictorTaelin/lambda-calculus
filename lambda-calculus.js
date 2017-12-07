@@ -172,7 +172,7 @@ module.exports = (function(){
         switch (source[index]) {
           case ".":
             return Lam(parse(depth+1, binders.concat(binder), aliases.concat(null)))
-          case "=":
+          case ":":
             var term = parse(depth, binders, aliases);
             var body = parse(depth+1, binders.concat(binder), aliases.concat(term));
             return body;
