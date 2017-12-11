@@ -1,6 +1,6 @@
 {
   "name": "lambda-calculus",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "A simple, clean and fast implementation of the λ-calculus on JavaScript.",
   "main": "lambda-calculus.js",
   "scripts": {

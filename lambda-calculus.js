@@ -10,8 +10,8 @@ module.exports = (function(){
 
   // Term, Term -> Term
   // The application of two terms.
-  function App(left,right){ 
-    return {ctor:"App", left:left, right:right};
+  function App(func,argm){ 
+    return {ctor:"App", func:func, argm:argm};
   };
 
   // Number -> Term
@@ -27,7 +27,7 @@ module.exports = (function(){
       switch (term.ctor){
         case "Var": return foldVar(term.index);
         case "Lam": return foldLam(go(term.body));
-        case "App": return foldApp(go(term.left),go(term.right));
+        case "App": return foldApp(go(term.func),go(term.argm));
       };
     };
   };
@@ -62,7 +62,7 @@ module.exports = (function(){
     return foldScoped(
       function(varid){ return toName(varid); },
       function(varid, body){ return lam(toName(varid),body); },
-      function(left, right){ return app(left,right); });
+      function(func, argm){ return app(func,argm); });
   };
 
   // Number -> Term
@@ -147,7 +147,7 @@ module.exports = (function(){
   var toBruijn = fold(
     function(index){ return index; },
     function(body){ return "L" + body; },
-    function(left,right){ return "(" + left + " " + right + ")"; });
+    function(func,argm){ return "(" + func + " " + argm + ")"; });
 
   // String -> Term
   function fromString(source){
