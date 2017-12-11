@@ -2,35 +2,32 @@
 // A simple, clean and fast implementation of the λ-calculus on JavaScript.
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 module.exports = (function(){
-  // data Term = Lam Term | App Term Term | Var Number
-  var VAR = 1, LAM = 2, APP = 3;
-
   // Term -> Term
   // Creates an abstraction.
   function Lam(body){ 
-    return {type:LAM, body:body}; 
+    return {ctor:"Lam", body:body}; 
   };
 
   // Term, Term -> Term
   // The application of two terms.
   function App(left,right){ 
-    return {type:APP, left:left, right:right};
+    return {ctor:"App", left:left, right:right};
   };
 
   // Number -> Term
   // A bruijn-indexed variable.
   function Var(index){ 
-    return {type:VAR, index:index}; 
+    return {ctor:"Var", index:index}; 
   };
 
   // ∀ a . (Number -> a), (a, a -> a), (a -> a), Term -> a
   // Replaces constructors by functions.
   function fold(foldVar,foldLam,foldApp){
     return function go(term){
-      switch (term.type){
-        case VAR: return foldVar(term.index);
-        case LAM: return foldLam(go(term.body));
-        case APP: return foldApp(go(term.left),go(term.right));
+      switch (term.ctor){
+        case "Var": return foldVar(term.index);
+        case "Lam": return foldLam(go(term.body));
+        case "App": return foldApp(go(term.left),go(term.right));
       };
     };
   };
@@ -257,9 +254,6 @@ module.exports = (function(){
     Lam: Lam,
     App: App,
     Var: Var,
-    LAM: LAM,
-    APP: APP,
-    VAR: VAR,
     fold: fold,
     foldScoped: foldScoped,
     fromNumber: fromNumber,
@@ -274,5 +268,6 @@ module.exports = (function(){
     fromBLC: fromBLC,
     toBLC64: toBLC64,
     fromBLC64: fromBLC64,
-    reduce: reduce};
+    reduce: reduce
+  };
 })();
