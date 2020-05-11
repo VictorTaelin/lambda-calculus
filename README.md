@@ -1,5 +1,7 @@
 ## Lambda Calculus
 
+*Note: there is a cleaner implementation on the issues, will merge eventually...*
+
 A simple, clean and fast implementation of the λ-calculus on JavaScript. It has zero dependencies and only 2.65KB gzipped. It evaluates terms very efficiently by using native JS functions, which is possible thanks to a clever compile/readback algorithm based on JS semantics. It includes the most relevant IO formats - bruijn-indices, binary, base64 and the usual "Wikipedia syntax" - so you can easily export to/from other tools. You can also convert native JS functions to terms and back.
 
 #### Install
