@@ -1,0 +1,6 @@
+@true  = λt.λf.t
+@false = λt.λf.f
+@not   = λb.λt.λf.b(f, t)
+@and   = λa.λb.a(b, a)
+@or    = λa.λb.a(a, b)
+@main  = @and(@not(@false), @or(@false, @true))

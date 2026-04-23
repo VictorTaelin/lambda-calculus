@@ -1,0 +1,12 @@
+{
+  "name": "lam",
+  "version": "0.1.0",
+  "description": "A minimal lambda calculus normalizer",
+  "type": "module",
+  "bin": {
+    "lam": "src/cli.ts"
+  },
+  "files": [
+    "src"
+  ]
+}

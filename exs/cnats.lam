@@ -1,0 +1,7 @@
+@zero  = λf.λx.x
+@succ  = λn.λf.λx.f(n(f, x))
+@add   = λm.λn.λf.λx.m(f, n(f, x))
+@mul   = λm.λn.λf.m(n(f))
+@two   = @succ(@succ(@zero))
+@three = @succ(@two)
+@main  = @mul(@two, @three)

@@ -1,0 +1,9 @@
+@zero = λf.λx.x
+@succ = λn.λf.λx.f(n(f, x))
+@one  = @succ(@zero)
+@two  = @succ(@one)
+@pair = λa.λb.λf.f(a, b)
+@fst  = λp.p(λa.λb.a)
+@snd  = λp.p(λa.λb.b)
+@swap = λp.@pair(@snd(p), @fst(p))
+@main = @swap(@pair(@one, @two))

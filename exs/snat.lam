@@ -1,0 +1,5 @@
+@Z    = λz.λs.z
+@S    = λn.λz.λs.s(n)
+@mul2 = λn.n(@Z, λp.@S(@S(@mul2(p))))
+@n4   = @S(@S(@S(@S(@Z))))
+@main = @mul2(@n4)
