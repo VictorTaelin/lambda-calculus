@@ -83,7 +83,15 @@ export function parse(code: string): Book {
   var i = 0;
 
   function skip() {
-    while (/[ \n]/.test(code[i])) i++;
+    while (i < code.length) {
+      if (code[i] === '/' && code[i+1] === '/') {
+        while (i < code.length && code[i] !== '\n') i++;
+      } else if (/[ \n]/.test(code[i])) {
+        i++;
+      } else {
+        break;
+      }
+    }
   }
 
   function parse_char(c: string) {
@@ -183,8 +191,43 @@ function bin_argm(term: Term & { $: "App" }, d: number, defs: string[], di: numb
   return term_to_bin(term.argm, d, defs, di);
 }
 
+function collect_refs(term: Term): Set<string> {
+  switch (term.$) {
+    case "Var": return new Set();
+    case "Ref": return new Set([term.name]);
+    case "Lam": return collect_refs(term.body(Var("_")));
+    case "App": {
+      var a = collect_refs(term.func);
+      for (var r of collect_refs(term.argm)) a.add(r);
+      return a;
+    }
+  }
+}
+
+function topo_sort(book: Book): string[] {
+  var names = Object.keys(book);
+  var deps: Map<string, Set<string>> = new Map();
+  for (var n of names) deps.set(n, collect_refs(book[n]));
+  var sorted: string[] = [];
+  var visited: Set<string> = new Set();
+  var visiting: Set<string> = new Set();
+  function visit(n: string) {
+    if (visited.has(n)) return;
+    if (visiting.has(n)) { visited.add(n); return; } // self-ref cycle
+    visiting.add(n);
+    for (var d of deps.get(n) || []) {
+      if (deps.has(d)) visit(d);
+    }
+    visiting.delete(n);
+    visited.add(n);
+    sorted.push(n);
+  }
+  for (var n of names) visit(n);
+  return sorted;
+}
+
 export function to_bin(book: Book): string {
-  var defs = Object.keys(book);
+  var defs = topo_sort(book);
   var bits = "";
   for (var i = 0; i < defs.length; i++) {
     bits += "1" + term_to_bin(book[defs[i]], 0, defs, i);

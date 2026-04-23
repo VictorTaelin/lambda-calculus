@@ -25,7 +25,8 @@ if (flags.has("--from-bin")) {
 }
 
 var code = input.endsWith(".lam") ? readFileSync(input, "utf-8") : input;
-var book = parse(code.trimStart()[0] === "@" ? code : "@main = " + code);
+var stripped = code.replace(/\/\/[^\n]*/g, "").trimStart();
+var book = parse(stripped[0] === "@" ? code : "@main = " + code);
 
 if (flags.has("--to-bin")) {
   console.log(to_bin(book));
