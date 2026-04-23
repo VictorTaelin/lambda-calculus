@@ -1,4 +1,4 @@
-type Term
+export type Term
   = { $: "Var"; name: string }
   | { $: "Ref"; name: string }
   | { $: "Lam"; name: string; body: (x: Term) => Term }
@@ -7,7 +7,7 @@ type Term
 export type Book = { [name: string]: Term };
 export type Stats = { beta: number };
 
-function Var(name: string): Term {
+export function Var(name: string): Term {
   return { $: "Var", name };
 }
 
@@ -15,17 +15,17 @@ export function Ref(name: string): Term {
   return { $: "Ref", name };
 }
 
-function Lam(name: string, body: (x: Term) => Term): Term {
+export function Lam(name: string, body: (x: Term) => Term): Term {
   return { $: "Lam", name, body };
 }
 
-function App(func: Term, argm: Term): Term {
+export function App(func: Term, argm: Term): Term {
   return { $: "App", func, argm };
 }
 
 // Names
 
-function name_of(n: number): string {
+export function name_of(n: number): string {
   if (n < 26) {
     return String.fromCharCode(97 + n);
   }
