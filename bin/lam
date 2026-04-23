@@ -1,0 +1,10 @@
+#!/usr/bin/env sh
+set -e
+
+dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+
+if [ -x "$dir/lam-hs" ]; then
+  exec "$dir/lam-hs" "$@"
+fi
+
+exec bun "$dir/../src/cli.ts" "$@"

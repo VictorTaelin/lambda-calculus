@@ -1,12 +1,18 @@
 {
   "name": "lambda-calculus",
-  "version": "3.0.0",
+  "version": "3.1.0",
   "description": "A minimal lambda calculus normalizer",
   "type": "module",
   "bin": {
-    "lam": "src/cli.ts"
+    "lam": "bin/lam"
+  },
+  "scripts": {
+    "postinstall": "node scripts/postinstall.mjs"
   },
   "files": [
-    "src"
+    "src",
+    "hs",
+    "bin/lam",
+    "scripts"
   ]
 }
