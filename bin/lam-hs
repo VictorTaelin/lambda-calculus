@@ -1,7 +1,16 @@
 #!/usr/bin/env sh
 set -e
 
-dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+src=$0
+while [ -L "$src" ]; do
+  dir=$(CDPATH= cd -P -- "$(dirname -- "$src")" && pwd)
+  link=$(readlink "$src")
+  case $link in
+    /*) src=$link ;;
+    *) src=$dir/$link ;;
+  esac
+done
+dir=$(CDPATH= cd -P -- "$(dirname -- "$src")" && pwd)
 
 if [ -x "$dir/lam-hs-bin" ]; then
   exec "$dir/lam-hs-bin" "$@"

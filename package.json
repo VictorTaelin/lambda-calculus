@@ -1,6 +1,6 @@
 {
   "name": "lambda-calculus",
-  "version": "3.2.0",
+  "version": "3.2.1",
   "description": "A minimal lambda calculus normalizer",
   "type": "module",
   "bin": {
