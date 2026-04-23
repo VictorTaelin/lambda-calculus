@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 import { readFileSync } from "fs";
-import { parse, snf, show, Ref, Stats, to_bin, from_bin, check_affine } from "./lam";
+import { parse, snf, show, Ref, App, Term, Stats, to_bin, from_bin, check_affine } from "./lam";
 
 var flags = new Set<string>();
 var positional: string[] = [];
@@ -14,7 +14,7 @@ for (var arg of process.argv.slice(2)) {
 
 var input = positional[0];
 if (!input) {
-  console.error("Usage: lam <file.lam|bits> [entry] [-s] [--to-bin|--from-bin|--affine]");
+  console.error("Usage: lam <file.lam|bits> [args...] [-s] [--to-bin|--from-bin|--affine]");
   process.exit(1);
 }
 
@@ -46,10 +46,14 @@ if (flags.has("--affine")) {
 }
 
 var keys = Object.keys(book);
-var entry = positional[1] || keys[keys.length - 1];
+var entry = keys[keys.length - 1];
+var term: Term = Ref(entry);
+for (var ext of positional.slice(1)) {
+  term = App(term, parse("@_ = " + ext)["_"]);
+}
 var stats: Stats = { beta: 0 };
 var t0 = performance.now();
-var result = snf(book, Ref(entry), stats);
+var result = snf(book, term, stats);
 var dt = (performance.now() - t0) / 1000;
 console.log(show(result));
 if (flags.has("-s")) {
