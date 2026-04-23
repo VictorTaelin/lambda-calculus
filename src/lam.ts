@@ -171,68 +171,63 @@ export function parse(code: string): Book {
 // Binary
 
 function nat_to_bin(n: number): string {
+  if (!Number.isInteger(n) || n < 0) {
+    throw new Error("Invalid natural number: " + n);
+  }
   return "1".repeat(n) + "0";
 }
 
-function term_to_bin(term: Term, d: number, defs: string[], di: number): string {
+function bits_per_ref(defs: string[]): number {
+  return Math.ceil(Math.log2(Math.max(defs.length, 1)));
+}
+
+function index_to_bits(index: number, width: number): string {
+  if (!Number.isInteger(index) || index < 0 || index >= 2 ** width) {
+    throw new Error("Invalid global reference index: " + index);
+  }
+  return index.toString(2).padStart(width, "0");
+}
+
+function bits_to_index(bits: string, pos: { i: number }, width: number): number {
+  if (width === 0) return 0;
+  var end = pos.i + width;
+  if (end > bits.length) throw new Error("Invalid binary");
+  var chunk = bits.slice(pos.i, end);
+  if (!/^[01]+$/.test(chunk)) throw new Error("Invalid binary");
+  pos.i = end;
+  return parseInt(chunk, 2);
+}
+
+function term_to_bin(term: Term, d: number, defs: string[]): string {
   switch (term.$) {
     case "Var": return "10" + nat_to_bin(d - parseInt(term.name.slice(1)) - 1);
-    case "Ref": return "11" + nat_to_bin(di - defs.indexOf(term.name));
-    case "Lam": return "00" + term_to_bin(term.body(Var("$" + d)), d + 1, defs, di);
-    case "App": return "01" + bin_func(term, d, defs, di) + bin_argm(term, d, defs, di);
+    case "Ref": return "11" + ref_to_bin(term.name, defs);
+    case "Lam": return "00" + term_to_bin(term.body(Var("$" + d)), d + 1, defs);
+    case "App": return "01" + bin_func(term, d, defs) + bin_argm(term, d, defs);
   }
 }
 
-function bin_func(term: Term & { $: "App" }, d: number, defs: string[], di: number): string {
-  return term_to_bin(term.func, d, defs, di);
+function ref_to_bin(name: string, defs: string[]): string {
+  var index = defs.indexOf(name);
+  if (index < 0) throw new Error("Undefined reference: @" + name);
+  return index_to_bits(index, bits_per_ref(defs));
 }
 
-function bin_argm(term: Term & { $: "App" }, d: number, defs: string[], di: number): string {
-  return term_to_bin(term.argm, d, defs, di);
+function bin_func(term: Term & { $: "App" }, d: number, defs: string[]): string {
+  return term_to_bin(term.func, d, defs);
 }
 
-function collect_refs(term: Term): Set<string> {
-  switch (term.$) {
-    case "Var": return new Set();
-    case "Ref": return new Set([term.name]);
-    case "Lam": return collect_refs(term.body(Var("_")));
-    case "App": {
-      var a = collect_refs(term.func);
-      for (var r of collect_refs(term.argm)) a.add(r);
-      return a;
-    }
-  }
-}
-
-function topo_sort(book: Book): string[] {
-  var names = Object.keys(book);
-  var deps: Map<string, Set<string>> = new Map();
-  for (var n of names) deps.set(n, collect_refs(book[n]));
-  var sorted: string[] = [];
-  var visited: Set<string> = new Set();
-  var visiting: Set<string> = new Set();
-  function visit(n: string) {
-    if (visited.has(n)) return;
-    if (visiting.has(n)) { visited.add(n); return; } // self-ref cycle
-    visiting.add(n);
-    for (var d of deps.get(n) || []) {
-      if (deps.has(d)) visit(d);
-    }
-    visiting.delete(n);
-    visited.add(n);
-    sorted.push(n);
-  }
-  for (var n of names) visit(n);
-  return sorted;
+function bin_argm(term: Term & { $: "App" }, d: number, defs: string[]): string {
+  return term_to_bin(term.argm, d, defs);
 }
 
 export function to_bin(book: Book): string {
-  var defs = topo_sort(book);
-  var bits = "";
+  var defs = Object.keys(book);
+  var bits = nat_to_bin(defs.length);
   for (var i = 0; i < defs.length; i++) {
-    bits += "1" + term_to_bin(book[defs[i]], 0, defs, i);
+    bits += term_to_bin(book[defs[i]], 0, defs);
   }
-  return bits + "0";
+  return bits;
 }
 
 function read_nat(bits: string, pos: { i: number }): number {
@@ -241,24 +236,31 @@ function read_nat(bits: string, pos: { i: number }): number {
     n++;
     pos.i++;
   }
+  if (bits[pos.i] !== "0") throw new Error("Invalid binary");
   pos.i++;
   return n;
 }
 
-function read_term(bits: string, pos: { i: number }, d: number, dns: string[], di: number): string {
+function read_term(bits: string, pos: { i: number }, d: number, dns: string[]): string {
   var tag = bits[pos.i++]! + bits[pos.i++]!;
   switch (tag) {
     case "10": return name_of(d - read_nat(bits, pos) - 1);
-    case "11": return "@" + dns[di - read_nat(bits, pos)];
-    case "00": return "λ" + name_of(d) + "." + read_term(bits, pos, d + 1, dns, di);
-    case "01": return read_app(bits, pos, d, dns, di);
+    case "11": return read_ref(bits, pos, dns);
+    case "00": return "λ" + name_of(d) + "." + read_term(bits, pos, d + 1, dns);
+    case "01": return read_app(bits, pos, d, dns);
     default: throw "Invalid binary";
   }
 }
 
-function read_app(bits: string, pos: { i: number }, d: number, dns: string[], di: number): string {
-  var func = read_term(bits, pos, d, dns, di);
-  var argm = read_term(bits, pos, d, dns, di);
+function read_ref(bits: string, pos: { i: number }, dns: string[]): string {
+  var index = bits_to_index(bits, pos, bits_per_ref(dns));
+  if (index >= dns.length) throw new Error("Invalid binary");
+  return "@" + dns[index];
+}
+
+function read_app(bits: string, pos: { i: number }, d: number, dns: string[]): string {
+  var func = read_term(bits, pos, d, dns);
+  var argm = read_term(bits, pos, d, dns);
   if (func.startsWith("λ")) {
     return "(" + func + ")(" + argm + ")";
   }
@@ -267,16 +269,13 @@ function read_app(bits: string, pos: { i: number }, d: number, dns: string[], di
 
 export function from_bin(bits: string): string {
   var pos = { i: 0 };
-  var dns: string[] = [];
+  var count = read_nat(bits, pos);
+  var dns = Array.from({ length: count }, (_, i) => name_of(i));
   var lines: string[] = [];
-  var idx = 0;
-  while (bits[pos.i] === "1") {
-    pos.i++;
-    var dn = name_of(idx);
-    dns.push(dn);
-    lines.push("@" + dn + " = " + read_term(bits, pos, 0, dns, idx));
-    idx++;
+  for (var idx = 0; idx < count; idx++) {
+    lines.push("@" + dns[idx] + " = " + read_term(bits, pos, 0, dns));
   }
+  if (pos.i !== bits.length) throw new Error("Invalid binary");
   return lines.join("\n") + "\n";
 }
 

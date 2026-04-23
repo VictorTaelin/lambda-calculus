@@ -85,22 +85,25 @@ $ lam exs/cnats.lam --affine
 Books and terms have a compact binary representation:
 
 ```
-Book ::= 1 Term Book | 0
-Term ::= 10 Name       (Var)
-       | 11 Name       (Ref)
+Book ::= Defs Term^Defs
+Defs ::= 1 Defs | 0    (unary definition count)
+Term ::= 10 Nat        (Var)
+       | 11 Global     (Ref)
        | 00 Term       (Lam)
        | 01 Term Term  (App)
-Name ::= 1 Name | 0    (unary nat)
+Nat  ::= 1 Nat | 0     (unary natural)
 ```
 
 A Var name is a de Bruijn index (0 = innermost lambda). A Ref name is a
-backwards index into the book (0 = self, 1 = previous def, etc.).
+fixed-width global top-level definition index. The width is the minimum
+needed for the definition count: `ceil(log2(max(defs, 1)))` bits. This
+allows mutual top-level recursion and forward references.
 
 The round-trip is exact: `to_bin(from_bin(bits)) == bits`.
 
 ```bash
 $ lam exs/cnats.lam --to-bin
-10000100100000001101001011011010101001...
+11111110000010000000001101001011011010101000...
 
 $ lam --from-bin "$(lam exs/cnats.lam --to-bin)"
 @a = λa.λb.b
