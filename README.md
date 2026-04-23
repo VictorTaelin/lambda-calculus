@@ -8,8 +8,9 @@ A minimal lambda calculus normalizer.
 npm i -g lambda-calculus
 ```
 
-When `ghc` is available during install, the package builds and uses the
-Haskell CLI backend. Without `ghc`, it falls back to the Bun TypeScript CLI.
+The package installs `lam`, `lam-hs`, and `lam-ts`. When `ghc` is available
+during install, `lam` uses the Haskell backend. Without `ghc`, `lam` falls
+back to `lam-ts`.
 
 ## Usage
 

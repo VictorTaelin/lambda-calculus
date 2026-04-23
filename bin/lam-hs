@@ -1,0 +1,12 @@
+#!/usr/bin/env sh
+set -e
+
+dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+
+if [ -x "$dir/lam-hs-bin" ]; then
+  exec "$dir/lam-hs-bin" "$@"
+fi
+
+printf '%s\n' "lam-hs: Haskell backend is not installed." >&2
+printf '%s\n' "Install ghc and reinstall lambda-calculus, or use lam-ts." >&2
+exit 127

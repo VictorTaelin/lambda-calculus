@@ -3,8 +3,8 @@ set -e
 
 dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 
-if [ -x "$dir/lam-hs" ]; then
-  exec "$dir/lam-hs" "$@"
+if [ -x "$dir/lam-hs-bin" ]; then
+  exec "$dir/lam-hs-bin" "$@"
 fi
 
-exec bun "$dir/../src/cli.ts" "$@"
+exec "$dir/lam-ts" "$@"

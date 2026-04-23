@@ -4,7 +4,7 @@ import { spawnSync } from "node:child_process";
 const ghc = spawnSync("ghc", ["--version"], { stdio: "ignore" });
 
 if (ghc.status !== 0) {
-  console.warn("lambda-calculus: ghc not found; using Bun TypeScript CLI");
+  console.warn("lambda-calculus: ghc not found; lam defaults to lam-ts");
   process.exit(0);
 }
 
@@ -17,12 +17,12 @@ const result = spawnSync("ghc", [
   "-hidir", ".build/hs",
   "hs/cli.hs",
   "hs/lam.hs",
-  "-o", "bin/lam-hs",
+  "-o", "bin/lam-hs-bin",
 ], { stdio: "inherit" });
 
 if (result.status !== 0) {
-  console.warn("lambda-calculus: Haskell build failed; using Bun TypeScript CLI");
+  console.warn("lambda-calculus: Haskell build failed; lam defaults to lam-ts");
   process.exit(0);
 }
 
-console.warn("lambda-calculus: installed Haskell lam backend");
+console.warn("lambda-calculus: installed lam-hs; lam defaults to lam-hs");

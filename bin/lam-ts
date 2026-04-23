@@ -1,0 +1,6 @@
+#!/usr/bin/env sh
+set -e
+
+dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+
+exec bun "$dir/../src/cli.ts" "$@"

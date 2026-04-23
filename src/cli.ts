@@ -2,6 +2,19 @@
 import { readFileSync } from "fs";
 import { parse, snf, show, Ref, App, Term, Stats, to_bin, from_bin, check_affine } from "./lam";
 
+var usage = [
+  "lam-ts",
+  "",
+  "Usage: lam-ts <file.lam|bits> [args...] [-s] [--to-bin|--from-bin|--affine]",
+  "",
+  "Options:",
+  "  -h, --help    Show this help.",
+  "  -s            Show stats.",
+  "  --to-bin      Encode a book as bits.",
+  "  --from-bin    Decode bits or a .bin file.",
+  "  --affine      Check that variables are used at most once.",
+].join("\n");
+
 var flags = new Set<string>();
 var positional: string[] = [];
 for (var arg of process.argv.slice(2)) {
@@ -12,9 +25,14 @@ for (var arg of process.argv.slice(2)) {
   }
 }
 
+if (flags.has("-h") || flags.has("--help")) {
+  console.log(usage);
+  process.exit(0);
+}
+
 var input = positional[0];
 if (!input) {
-  console.error("Usage: lam <file.lam|bits> [args...] [-s] [--to-bin|--from-bin|--affine]");
+  console.error(usage);
   process.exit(1);
 }
 

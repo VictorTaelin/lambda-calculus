@@ -11,7 +11,18 @@ import Data.Time.Clock (diffUTCTime, getCurrentTime)
 import Lam
 
 usage :: String
-usage = "Usage: lam <file.lam|bits> [args...] [-s] [--to-bin|--from-bin|--affine]"
+usage = unlines
+  [ "lam-hs"
+  , ""
+  , "Usage: lam-hs <file.lam|bits> [args...] [-s] [--to-bin|--from-bin|--affine]"
+  , ""
+  , "Options:"
+  , "  -h, --help    Show this help."
+  , "  -s            Show stats."
+  , "  --to-bin      Encode a book as bits."
+  , "  --from-bin    Decode bits or a .bin file."
+  , "  --affine      Check that variables are used at most once."
+  ]
 
 splitArgs :: [String] -> ([String], [String])
 splitArgs = foldr step ([], []) where
@@ -52,22 +63,24 @@ parseArg arg = do
 main :: IO ()
 main = do
   (flags, positional) <- splitArgs <$> getArgs
-  case positional of
-    [] -> die usage
-    input:extras
-      | hasFlag flags "--from-bin" -> do
-          bits <- trim <$> loadInput ".bin" input
-          case fromBin bits of
-            Right code -> putStr code
-            Left err -> die ("error: " ++ err)
-      | otherwise -> do
-          code <- loadInput ".lam" input
-          book <- parseOrDie (wrapCode code)
-          if hasFlag flags "--to-bin"
-            then putStrLn (toBin book)
-            else if hasFlag flags "--affine"
-              then runAffine book
-              else runEval flags book extras
+  if hasFlag flags "-h" || hasFlag flags "--help"
+    then putStr usage
+    else case positional of
+      [] -> die usage
+      input:extras
+        | hasFlag flags "--from-bin" -> do
+            bits <- trim <$> loadInput ".bin" input
+            case fromBin bits of
+              Right code -> putStr code
+              Left err -> die ("error: " ++ err)
+        | otherwise -> do
+            code <- loadInput ".lam" input
+            book <- parseOrDie (wrapCode code)
+            if hasFlag flags "--to-bin"
+              then putStrLn (toBin book)
+              else if hasFlag flags "--affine"
+                then runAffine book
+                else runEval flags book extras
   where
     trim = reverse . dropWhile isSpace . reverse . dropWhile isSpace
 
